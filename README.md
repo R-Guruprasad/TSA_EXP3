@@ -15,53 +15,34 @@ type to fit the data.
 5. Represent the result in graphical representation as given below.
 ### PROGRAM:
 ```
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+data = pd.read_csv("Goodreadsbooks.csv", nrows=35)
+time_series = data['ratings_count'] 
 
-# Load the india's gdp data
-file_path = 'india-gdp.csv'  # Ensure this is the correct path to your CSV file
-gdp_data = pd.read_csv(file_path,nrows=50)
+n_data_points = len(time_series)
+n_lags = min(35, n_data_points - 1)
+acf_values = np.zeros(n_lags)
 
+mean = np.mean(time_series)
+variance = np.var(time_series)
+normalized_data = time_series - mean
 
-# Extract the 'AnnualChange' column (Change data)
-change_data = gdp_data['AnnualChange'].values
+for lag in range(n_lags):
+    lagged_data = np.roll(normalized_data, -lag)
+    acf_values[lag] = np.sum(normalized_data[:n_data_points-lag] * lagged_data[:n_data_points-lag]) / (variance * (n_data_points - lag))
 
-# Calculate mean and variance
-mean_change = np.mean(change_data)
-var_change = np.var(change_data)
-
-
-# Normalize the data (subtract mean and divide by standard deviation)
-normalized_change = (change_data - mean_change) / np.sqrt(var_change)
-
-# Compute the ACF for the first 35 lags
-def compute_acf(data, max_lag):
-    acf_values = []
-    n = len(data)
-    for lag in range(max_lag + 1):
-        if lag == 0:
-            acf_values.append(1)  # ACF at lag 0 is always 1
-        else:
-            acf = np.corrcoef(data[:-lag], data[lag:])[0, 1]
-            acf_values.append(acf)
-    return acf_values
-
-lags = range(35)
-acf_values = compute_acf(normalized_change, 34)
-
-# Plot the ACF results
 plt.figure(figsize=(10, 6))
-plt.stem(lags, acf_values, use_line_collection=True)
-plt.title('Autocorrelation Function (ACF) for India"s GDP')
+plt.stem(range(n_lags), acf_values)
+plt.title(f'ACF Plot (Manual Calculation, Lags: {n_lags})')
 plt.xlabel('Lag')
-plt.ylabel('Autocorrelation')
-plt.grid(True)
+plt.ylabel('ACF')
 plt.show()
 ```
 ### OUTPUT:
 
-![Screenshot 2024-09-13 092857](https://github.com/user-attachments/assets/6a2072a1-d4aa-4f59-9597-96a4ac7bfa38)
+![image](https://github.com/user-attachments/assets/329c8685-6e4f-4870-bf29-b7fc35aea9c0)
 
 ### RESULT:
 Thus we have successfully implemented the auto correlation function in python.
